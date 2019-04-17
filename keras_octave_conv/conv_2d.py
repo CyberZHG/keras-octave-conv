@@ -58,12 +58,12 @@ class OctaveConv2D(Layer):
 
         self.conv_high_to_high, self.conv_low_to_high = None, None
         if self.filters_high > 0:
-            self.conv_high_to_high = self._init_conv(self.filters_high, '{}-Conv2D-HH'.format(self.name))
-            self.conv_low_to_high = self._init_conv(self.filters_high, '{}-Conv2D-LH'.format(self.name))
+            self.conv_high_to_high = self._init_conv(self.filters_high, name='{}-Conv2D-HH'.format(self.name))
+            self.conv_low_to_high = self._init_conv(self.filters_high, name='{}-Conv2D-LH'.format(self.name))
         self.conv_low_to_low, self.conv_high_to_low = None, None
         if self.filters_low > 0:
-            self.conv_low_to_low = self._init_conv(self.filters_low, '{}-Conv2D-LL'.format(self.name))
-            self.conv_high_to_low = self._init_conv(self.filters_low, '{}-Conv2D-HL'.format(self.name))
+            self.conv_low_to_low = self._init_conv(self.filters_low, name='{}-Conv2D-HL'.format(self.name))
+            self.conv_high_to_low = self._init_conv(self.filters_low, name='{}-Conv2D-LL'.format(self.name))
         self.pooling = AveragePooling2D(
             pool_size=self.octave,
             padding='valid',
@@ -75,6 +75,26 @@ class OctaveConv2D(Layer):
             data_format=data_format,
             interpolation='nearest',
             name='{}-UpSampling2D'.format(self.name),
+        )
+
+    def _init_conv(self, filters, name):
+        return Conv2D(
+            filters=filters,
+            kernel_size=self.kernel_size,
+            strides=self.strides,
+            padding='same',
+            data_format=self.data_format,
+            dilation_rate=self.dilation_rate,
+            activation=self.activation,
+            use_bias=self.use_bias,
+            kernel_initializer=self.kernel_initializer,
+            bias_initializer=self.bias_initializer,
+            kernel_regularizer=self.kernel_regularizer,
+            bias_regularizer=self.bias_regularizer,
+            activity_regularizer=self.activity_regularizer,
+            kernel_constraint=self.kernel_constraint,
+            bias_constraint=self.bias_constraint,
+            name=name,
         )
 
     def build(self, input_shape):
@@ -99,24 +119,45 @@ class OctaveConv2D(Layer):
         if input_shape_low is None:
             self.conv_low_to_high, self.conv_low_to_low = None, None
 
-        self._trainable_weights, self._non_trainable_weights = [], []
         if self.conv_high_to_high is not None:
-            self.conv_high_to_high.build(input_shape_high)
-            self._trainable_weights += self.conv_high_to_high.trainable_weights
-            self._non_trainable_weights += self.conv_high_to_high.non_trainable_weights
+            with K.name_scope(self.conv_high_to_high.name):
+                self.conv_high_to_high.build(input_shape_high)
         if self.conv_low_to_high is not None:
-            self.conv_low_to_high.build(input_shape_low)
-            self._trainable_weights += self.conv_low_to_high.trainable_weights
-            self._non_trainable_weights += self.conv_low_to_high.non_trainable_weights
+            with K.name_scope(self.conv_low_to_high.name):
+                self.conv_low_to_high.build(input_shape_low)
         if self.conv_high_to_low is not None:
-            self.conv_high_to_low.build(input_shape_high)
-            self._trainable_weights += self.conv_high_to_low.trainable_weights
-            self._non_trainable_weights += self.conv_high_to_low.non_trainable_weights
+            with K.name_scope(self.conv_high_to_low.name):
+                self.conv_high_to_low.build(input_shape_high)
         if self.conv_low_to_low is not None:
-            self.conv_low_to_low.build(input_shape_low)
-            self._trainable_weights += self.conv_low_to_low.trainable_weights
-            self._non_trainable_weights += self.conv_low_to_low.non_trainable_weights
+            with K.name_scope(self.conv_low_to_low.name):
+                self.conv_low_to_low.build(input_shape_low)
         super(OctaveConv2D, self).build(input_shape)
+
+    @property
+    def trainable_weights(self):
+        weights = []
+        if self.conv_high_to_high is not None:
+            weights += self.conv_high_to_high.trainable_weights
+        if self.conv_low_to_high is not None:
+            weights += self.conv_low_to_high.trainable_weights
+        if self.conv_high_to_low is not None:
+            weights += self.conv_high_to_low.trainable_weights
+        if self.conv_low_to_low is not None:
+            weights += self.conv_low_to_low.trainable_weights
+        return weights
+
+    @property
+    def non_trainable_weights(self):
+        weights = []
+        if self.conv_high_to_high is not None:
+            weights += self.conv_high_to_high.non_trainable_weights
+        if self.conv_low_to_high is not None:
+            weights += self.conv_low_to_high.non_trainable_weights
+        if self.conv_high_to_low is not None:
+            weights += self.conv_high_to_low.non_trainable_weights
+        if self.conv_low_to_low is not None:
+            weights += self.conv_low_to_low.non_trainable_weights
+        return weights
 
     def compute_output_shape(self, input_shape):
         if isinstance(input_shape, list):
@@ -164,26 +205,6 @@ class OctaveConv2D(Layer):
         if self.filters_high == 0:
             return outputs_low
         return [outputs_high, outputs_low]
-
-    def _init_conv(self, filters, name):
-        return Conv2D(
-            filters=filters,
-            kernel_size=self.kernel_size,
-            strides=self.strides,
-            padding='same',
-            data_format=self.data_format,
-            dilation_rate=self.dilation_rate,
-            activation=self.activation,
-            use_bias=self.use_bias,
-            kernel_initializer=self.kernel_initializer,
-            bias_initializer=self.bias_initializer,
-            kernel_regularizer=self.kernel_regularizer,
-            bias_regularizer=self.bias_regularizer,
-            activity_regularizer=self.activity_regularizer,
-            kernel_constraint=self.kernel_constraint,
-            bias_constraint=self.bias_constraint,
-            name=name,
-        )
 
     def get_config(self):
         config = {

@@ -10,6 +10,7 @@ from keras_octave_conv import OctaveConv2D
 class TestConv2D(TestCase):
 
     def _test_fit(self, model, data_format='channels_last'):
+        print('\n'.join(map(str, model.trainable_weights)))
         data_size = 4096
         if data_format == 'channels_last':
             x = np.random.standard_normal((data_size, 32, 32, 3))
