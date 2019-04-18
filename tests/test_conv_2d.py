@@ -4,13 +4,12 @@ from unittest import TestCase
 import numpy as np
 from keras.layers import Input, MaxPool2D, Flatten, Dense
 from keras.models import Model, load_model
-from keras_octave_conv import OctaveConv2D
+from keras_octave_conv import OctaveConv2D, octave_dual
 
 
 class TestConv2D(TestCase):
 
     def _test_fit(self, model, data_format='channels_last'):
-        print('\n'.join(map(str, model.trainable_weights)))
         data_size = 4096
         if data_format == 'channels_last':
             x = np.random.standard_normal((data_size, 32, 32, 3))
@@ -98,3 +97,17 @@ class TestConv2D(TestCase):
             outputs = OctaveConv2D(13, kernel_size=3, octave=5, ratio_out=0.0)(inputs)
             model = Model(inputs=inputs, outputs=outputs)
             model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+
+    def test_make_dual_lambda(self):
+        inputs = Input(shape=(32, 32, 3))
+        conv = OctaveConv2D(13, kernel_size=3)(inputs)
+        pool = octave_dual(conv, lambda: MaxPool2D())
+        conv = OctaveConv2D(7, kernel_size=3)(pool)
+        pool = octave_dual(conv, lambda: MaxPool2D())
+        conv = OctaveConv2D(5, kernel_size=3, ratio_out=0.0)(pool)
+        flatten = Flatten()(conv)
+        outputs = Dense(units=2, activation='softmax')(flatten)
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+        model.summary(line_length=200)
+        self._test_fit(model)

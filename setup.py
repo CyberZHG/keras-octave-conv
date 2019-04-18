@@ -11,10 +11,10 @@ with codecs.open('requirements.txt', 'r', 'utf8') as reader:
 
 setup(
     name='keras-octave-conv',
-    version='0.4.0',
+    version='0.5.0',
     packages=find_packages(),
     url='https://github.com/CyberZHG/keras-octave-conv',
-    license='MIT',
+    license='MIT AND "Anti 996"',
     author='CyberZHG',
     author_email='CyberZHG@gmail.com',
     description='Octave convolution',

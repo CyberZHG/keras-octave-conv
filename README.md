@@ -53,7 +53,7 @@ high, low = OctaveConv2D(filters=8, kernel_size=3)([high, low])
 
 Note that the same `octave` value should be used throughout the whole model.
 
-## Last Octave
+### Last Octave
 
 Set `ratio_out` to `0.0` to get a single output for further processing:
 
@@ -70,6 +70,31 @@ high, low = OctaveConv2D(filters=8, kernel_size=3)([high, low])
 
 high, low = MaxPool2D()(high), MaxPool2D()(low)
 conv = OctaveConv2D(filters=4, kernel_size=3, ratio_out=0.0)([high, low])
+
+flatten = Flatten()(conv)
+outputs = Dense(units=10, activation='softmax')(flatten)
+
+model = Model(inputs=inputs, outputs=outputs)
+model.summary()
+```
+
+### Utility
+
+`octave_dual` helps to create dual layers for processing the outputs of octave convolutions:
+
+```python
+from keras.layers import Input, MaxPool2D, Flatten, Dense
+from keras.models import Model
+from keras_octave_conv import OctaveConv2D, octave_dual
+
+inputs = Input(shape=(32, 32, 3))
+conv = OctaveConv2D(filters=16, kernel_size=3)(inputs)
+
+pool = octave_dual(conv, MaxPool2D())
+conv = OctaveConv2D(filters=8, kernel_size=3)(pool)
+
+pool = octave_dual(conv, MaxPool2D())
+conv = OctaveConv2D(filters=4, kernel_size=3, ratio_out=0.0)(pool)
 
 flatten = Flatten()(conv)
 outputs = Dense(units=10, activation='softmax')(flatten)
