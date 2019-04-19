@@ -139,3 +139,27 @@ class TestConv2D(TestCase):
         model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
         model.summary(line_length=200)
         self._test_fit(model)
+
+    def test_fit_stride(self):
+        inputs = Input(shape=(32, 32, 3))
+        high, low = OctaveConv2D(13, kernel_size=3, strides=(1, 2))(inputs)
+        high, low = MaxPool2D()(high), MaxPool2D()(low)
+        conv = OctaveConv2D(5, kernel_size=3, ratio_out=0.0)([high, low])
+        flatten = Flatten()(conv)
+        outputs = Dense(units=2, activation='softmax')(flatten)
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+        model.summary(line_length=200)
+        self._test_fit(model)
+
+    def test_fit_octave_conv_stride(self):
+        inputs = Input(shape=(32, 32, 3))
+        conv = octave_conv_2d(inputs, filters=13, kernel_size=3, strides=(1, 2))
+        pool = octave_dual(conv, MaxPool2D())
+        conv = octave_conv_2d(pool, filters=5, kernel_size=3, ratio_out=1.0)
+        flatten = Flatten()(conv)
+        outputs = Dense(units=2, activation='softmax')(flatten)
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+        model.summary(line_length=200)
+        self._test_fit(model)
