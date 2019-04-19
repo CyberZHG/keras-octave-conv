@@ -102,3 +102,30 @@ outputs = Dense(units=10, activation='softmax')(flatten)
 model = Model(inputs=inputs, outputs=outputs)
 model.summary()
 ```
+
+`octave_conv_2d` creates the octave structure with built-in Keras layers:
+
+```python
+from keras.layers import Input, MaxPool2D, Flatten, Dense
+from keras.models import Model
+from keras.utils import plot_model
+from keras_octave_conv import octave_conv_2d, octave_dual
+
+inputs = Input(shape=(32, 32, 3), name='Input')
+conv = octave_conv_2d(inputs, filters=16, kernel_size=3, name='Octave-First')
+
+pool = octave_dual(conv, MaxPool2D(name='Pool-1'))
+conv = octave_conv_2d(pool, filters=8, kernel_size=3, name='Octave-Mid')
+
+pool = octave_dual(conv, MaxPool2D(name='Pool-2'))
+conv = octave_conv_2d(pool, filters=4, kernel_size=3, ratio_out=0.0, name='Octave-Last')
+
+flatten = Flatten(name='Flatten')(conv)
+outputs = Dense(units=10, activation='softmax', name='Output')(flatten)
+
+model = Model(inputs=inputs, outputs=outputs)
+model.summary()
+plot_model(model, to_file='octave_model.png')
+```
+
+![](./octave_model.png)

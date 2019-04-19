@@ -4,7 +4,7 @@ from unittest import TestCase
 import numpy as np
 from keras.layers import Input, MaxPool1D, Flatten, Dense
 from keras.models import Model, load_model
-from keras_octave_conv import OctaveConv1D, octave_dual
+from keras_octave_conv import OctaveConv1D, octave_dual, octave_conv_1d
 
 
 class TestConv1D(TestCase):
@@ -88,6 +88,34 @@ class TestConv1D(TestCase):
         conv = OctaveConv1D(7, kernel_size=3)(pool)
         pool = octave_dual(conv, MaxPool1D())
         conv = OctaveConv1D(5, kernel_size=3, ratio_out=0.0)(pool)
+        flatten = octave_dual(conv, Flatten())
+        outputs = Dense(units=2, activation='softmax')(flatten)
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+        model.summary(line_length=200)
+        self._test_fit(model)
+
+    def test_fit_octave_conv_high(self):
+        inputs = Input(shape=(32, 3))
+        conv = octave_conv_1d(inputs, filters=13, kernel_size=3)
+        pool = octave_dual(conv, MaxPool1D())
+        conv = octave_conv_1d(pool, filters=7, kernel_size=3, name='Mid')
+        pool = octave_dual(conv, MaxPool1D())
+        conv = octave_conv_1d(pool, filters=5, kernel_size=3, ratio_out=0.0)
+        flatten = octave_dual(conv, Flatten())
+        outputs = Dense(units=2, activation='softmax')(flatten)
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
+        model.summary(line_length=200)
+        self._test_fit(model)
+
+    def test_fit_octave_conv_low(self):
+        inputs = Input(shape=(32, 3))
+        conv = octave_conv_1d(inputs, filters=13, kernel_size=3)
+        pool = octave_dual(conv, MaxPool1D())
+        conv = octave_conv_1d(pool, filters=7, kernel_size=3, name='Mid')
+        pool = octave_dual(conv, MaxPool1D())
+        conv = octave_conv_1d(pool, filters=5, kernel_size=3, ratio_out=1.0)
         flatten = octave_dual(conv, Flatten())
         outputs = Dense(units=2, activation='softmax')(flatten)
         model = Model(inputs=inputs, outputs=outputs)
