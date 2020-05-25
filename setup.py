@@ -16,7 +16,7 @@ setup(
     url='https://github.com/CyberZHG/keras-octave-conv',
     license='MIT AND "Anti 996"',
     author='CyberZHG',
-    author_email='CyberZHG@gmail.com',
+    author_email='CyberZHG@users.noreply.github.com',
     description='Octave convolution',
     long_description=long_description,
     long_description_content_type='text/markdown',
