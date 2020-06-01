@@ -1,11 +1,11 @@
-from keras.layers import Layer, Conv2D, AveragePooling2D, UpSampling2D, Add
-from keras import activations, initializers, regularizers, constraints
-import keras.backend as K
+from .backend import layers
+from .backend import activations, initializers, regularizers, constraints
+from .backend import backend as K
 
 __all__ = ['OctaveConv2D', 'octave_conv_2d']
 
 
-class OctaveConv2D(Layer):
+class OctaveConv2D(layers.Layer):
     """Octave convolutions.
 
     # Arguments
@@ -41,7 +41,7 @@ class OctaveConv2D(Layer):
         self.octave = octave
         self.ratio_out = ratio_out
         self.strides = strides
-        self.data_format = K.normalize_data_format(data_format)
+        self.data_format = data_format
         self.dilation_rate = dilation_rate
         self.activation = activations.get(activation)
         self.use_bias = use_bias
@@ -64,13 +64,13 @@ class OctaveConv2D(Layer):
         if self.filters_low > 0:
             self.conv_low_to_low = self._init_conv(self.filters_low, name='{}-Conv2D-HL'.format(self.name))
             self.conv_high_to_low = self._init_conv(self.filters_low, name='{}-Conv2D-LL'.format(self.name))
-        self.pooling = AveragePooling2D(
+        self.pooling = layers.AveragePooling2D(
             pool_size=self.octave,
             padding='valid',
             data_format=data_format,
             name='{}-AveragePooling2D'.format(self.name),
         )
-        self.up_sampling = UpSampling2D(
+        self.up_sampling = layers.UpSampling2D(
             size=self.octave,
             data_format=data_format,
             interpolation='nearest',
@@ -78,7 +78,7 @@ class OctaveConv2D(Layer):
         )
 
     def _init_conv(self, filters, name):
-        return Conv2D(
+        return layers.Conv2D(
             filters=filters,
             kernel_size=self.kernel_size,
             strides=self.strides,
@@ -261,7 +261,7 @@ def octave_conv_2d(inputs,
             conv_name = None
         else:
             conv_name = name + '-' + conv_name_suffix
-        return Conv2D(
+        return layers.Conv2D(
             filters=conv_filters,
             kernel_size=kernel_size,
             strides=strides,
@@ -289,7 +289,7 @@ def octave_conv_2d(inputs,
                 up_sampling_name, add_name = None, None
             else:
                 up_sampling_name, add_name = name + '-UpSample', name + '-Add-H'
-            outputs_high = Add(name=add_name)([outputs_high, UpSampling2D(
+            outputs_high = layers.Add(name=add_name)([outputs_high, layers.UpSampling2D(
                 size=octave,
                 data_format=data_format,
                 interpolation='nearest',
@@ -302,14 +302,14 @@ def octave_conv_2d(inputs,
             pooling_name, add_name = None, None
         else:
             pooling_name, add_name = name + '-Pool', name + '-Add-L'
-        outputs_low = _init_conv(filters_low, 'HL')(AveragePooling2D(
+        outputs_low = _init_conv(filters_low, 'HL')(layers.AveragePooling2D(
             pool_size=octave,
             padding='valid',
             data_format=data_format,
             name=pooling_name,
         )(inputs_high))
         if inputs_low is not None:
-            outputs_low = Add(name=add_name)([_init_conv(filters_low, 'LL')(inputs_low), outputs_low])
+            outputs_low = layers.Add(name=add_name)([_init_conv(filters_low, 'LL')(inputs_low), outputs_low])
 
     if outputs_high is None:
         return outputs_low

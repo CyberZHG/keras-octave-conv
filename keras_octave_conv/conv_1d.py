@@ -1,11 +1,11 @@
-from keras.layers import Layer, Conv1D, AveragePooling1D, UpSampling1D, Add
-from keras import activations, initializers, regularizers, constraints
-import keras.backend as K
+from .backend import layers
+from .backend import activations, initializers, regularizers, constraints
+from .backend import backend as K
 
 __all__ = ['OctaveConv1D', 'octave_conv_1d']
 
 
-class OctaveConv1D(Layer):
+class OctaveConv1D(layers.Layer):
     """Octave convolutions.
 
     # Arguments
@@ -62,18 +62,18 @@ class OctaveConv1D(Layer):
         if self.filters_low > 0:
             self.conv_low_to_low = self._init_conv(self.filters_low, name='{}-Conv1D-HL'.format(self.name))
             self.conv_high_to_low = self._init_conv(self.filters_low, name='{}-Conv1D-LL'.format(self.name))
-        self.pooling = AveragePooling1D(
+        self.pooling = layers.AveragePooling1D(
             pool_size=self.octave,
             padding='valid',
             name='{}-AveragePooling1D'.format(self.name),
         )
-        self.up_sampling = UpSampling1D(
+        self.up_sampling = layers.UpSampling1D(
             size=self.octave,
             name='{}-UpSampling1D'.format(self.name),
         )
 
     def _init_conv(self, filters, name):
-        return Conv1D(
+        return layers.Conv1D(
             filters=filters,
             kernel_size=self.kernel_size,
             strides=self.strides,
@@ -248,7 +248,7 @@ def octave_conv_1d(inputs,
             conv_name = None
         else:
             conv_name = name + '-' + conv_name_suffix
-        return Conv1D(
+        return layers.Conv1D(
             filters=conv_filters,
             kernel_size=kernel_size,
             strides=strides,
@@ -275,7 +275,7 @@ def octave_conv_1d(inputs,
                 up_sampling_name, add_name = None, None
             else:
                 up_sampling_name, add_name = name + '-UpSample', name + '-Add-H'
-            outputs_high = Add(name=add_name)([outputs_high, UpSampling1D(
+            outputs_high = layers.Add(name=add_name)([outputs_high, layers.UpSampling1D(
                 size=octave,
                 name=up_sampling_name,
             )(_init_conv(filters_high, 'LH')(inputs_low))])
@@ -286,13 +286,13 @@ def octave_conv_1d(inputs,
             pooling_name, add_name = None, None
         else:
             pooling_name, add_name = name + '-Pool', name + '-Add-L'
-        outputs_low = _init_conv(filters_low, 'HL')(AveragePooling1D(
+        outputs_low = _init_conv(filters_low, 'HL')(layers.AveragePooling1D(
             pool_size=octave,
             padding='valid',
             name=pooling_name,
         )(inputs_high))
         if inputs_low is not None:
-            outputs_low = Add(name=add_name)([_init_conv(filters_low, 'LL')(inputs_low), outputs_low])
+            outputs_low = layers.Add(name=add_name)([_init_conv(filters_low, 'LL')(inputs_low), outputs_low])
 
     if outputs_high is None:
         return outputs_low
