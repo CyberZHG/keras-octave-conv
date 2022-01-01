@@ -1,8 +1,10 @@
 import os
 import tempfile
 from unittest import TestCase
+
 import numpy as np
-from keras_octave_conv.backend import keras
+from tensorflow import keras
+
 from keras_octave_conv import OctaveConv2D, octave_conv_2d, octave_dual
 
 

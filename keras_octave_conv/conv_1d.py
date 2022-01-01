@@ -1,6 +1,5 @@
-from .backend import layers
-from .backend import activations, initializers, regularizers, constraints
-from .backend import backend as K
+from tensorflow.keras import layers, activations, initializers, regularizers, constraints
+from tensorflow.keras import backend as K
 
 __all__ = ['OctaveConv1D', 'octave_conv_1d']
 

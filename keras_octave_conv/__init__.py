@@ -2,4 +2,4 @@ from .conv_1d import *
 from .conv_2d import *
 from .conv_util import *
 
-__version__ = '0.10.0'
+__version__ = '0.11.0'

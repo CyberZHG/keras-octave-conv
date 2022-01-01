@@ -1,9 +1,6 @@
 # Keras Octave Conv
 
-[![Travis](https://travis-ci.org/CyberZHG/keras-octave-conv.svg)](https://travis-ci.org/CyberZHG/keras-octave-conv)
-[![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-octave-conv/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-octave-conv)
 ![](https://img.shields.io/badge/license-MIT-blue.svg)
-[![996.ICU](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://996.icu) 
 
 Unofficial implementation of [Drop an Octave: Reducing Spatial Redundancy in
 Convolutional Neural Networks with Octave Convolution](https://arxiv.org/pdf/1904.05049.pdf).
