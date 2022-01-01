@@ -20,7 +20,7 @@ The `OctaveConv2D` layer could be used just like the `Conv2D` layer, except the 
 Use a single input for the first octave layer:
 
 ```python
-from keras.layers import Input
+from tensorflow.keras.layers import Input
 from keras_octave_conv import OctaveConv2D
 
 inputs = Input(shape=(32, 32, 3))
@@ -38,7 +38,7 @@ Special arguments:
 The intermediate octave layers takes two inputs and produce two outputs:
 
  ```python
-from keras.layers import Input, MaxPool2D
+from tensorflow.keras.layers import Input, MaxPool2D
 from keras_octave_conv import OctaveConv2D
 
 inputs = Input(shape=(32, 32, 3))
@@ -55,8 +55,8 @@ Note that the same `octave` value should be used throughout the whole model.
 Set `ratio_out` to `0.0` to get a single output for further processing:
 
 ```python
-from keras.layers import Input, MaxPool2D, Flatten, Dense
-from keras.models import Model
+from tensorflow.keras.layers import Input, MaxPool2D, Flatten, Dense
+from tensorflow.keras.models import Model
 from keras_octave_conv import OctaveConv2D
 
 inputs = Input(shape=(32, 32, 3))
@@ -80,8 +80,8 @@ model.summary()
 `octave_dual` helps to create dual layers for processing the outputs of octave convolutions:
 
 ```python
-from keras.layers import Input, MaxPool2D, Flatten, Dense
-from keras.models import Model
+from tensorflow.keras.layers import Input, MaxPool2D, Flatten, Dense
+from tensorflow.keras.models import Model
 from keras_octave_conv import OctaveConv2D, octave_dual
 
 inputs = Input(shape=(32, 32, 3))
@@ -103,9 +103,9 @@ model.summary()
 `octave_conv_2d` creates the octave structure with built-in Keras layers:
 
 ```python
-from keras.layers import Input, MaxPool2D, Flatten, Dense
-from keras.models import Model
-from keras.utils import plot_model
+from tensorflow.keras.layers import Input, MaxPool2D, Flatten, Dense
+from tensorflow.keras.models import Model
+from tensorflow.keras.utils import plot_model
 from keras_octave_conv import octave_conv_2d, octave_dual
 
 inputs = Input(shape=(32, 32, 3), name='Input')
